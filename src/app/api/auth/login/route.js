@@ -3,9 +3,9 @@ import bcrypt from 'bcrypt';
 import { StreamChat } from 'stream-chat';
 import { NextResponse } from 'next/server';
 
-const api_key = process.env.NEXT_PUBLIC_STREAM_API_KEY;
-const api_secret = process.env.NEXT_PUBLIC_STREAM_API_SECRET;
-const app_id = process.env.NEXT_PUBLIC_STREAM_APP_ID;
+const api_key = process.env.STREAM_API_KEY;
+const api_secret = process.env.STREAM_API_SECRET;
+const app_id = process.env.STREAM_APP_ID;
 
 export async function POST(request) {
   try {
