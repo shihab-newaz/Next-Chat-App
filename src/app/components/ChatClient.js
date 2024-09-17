@@ -62,6 +62,7 @@ const ChatClient = () => {
   };
 
   const handleAuth = () => {
+    
     // console.log("handleAuth called");
     checkAuth();
   };
