@@ -8,6 +8,8 @@
     margin: 0;
     padding: 0;
     height: 100%;
+    font-family: "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Apple Color Emoji", "Android Emoji", sans-serif;
+
   }
   
   #root {

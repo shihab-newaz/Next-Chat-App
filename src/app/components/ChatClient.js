@@ -51,7 +51,7 @@ const ChatClient = () => {
         authToken
       )
       .then(() => {
-        // console.log("User connected successfully");
+         console.log("User connected successfully");
         setClient(client);
         setIsAuth(true);
       })

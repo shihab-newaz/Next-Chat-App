@@ -1,7 +1,8 @@
-import React, { useState, useCallback,useRef,useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   useMessageInputContext,
   useChannelStateContext,
+  useChannelActionContext
 } from "stream-chat-react";
 import "@/app/styles/CustomInput.css";
 import data from "@emoji-mart/data";
@@ -10,18 +11,40 @@ import { Smile, PaperclipIcon, Send } from "lucide-react";
 
 const CustomMessageInput = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const { handleSubmit, setText, text } = useMessageInputContext();
+  const { setText, text } = useMessageInputContext();
   const { channel } = useChannelStateContext();
+  const { sendMessage } = useChannelActionContext();
 
   const emojiPickerRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const insertEmoji = useCallback(
+    (emoji) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newText = text.slice(0, start) + emoji + text.slice(end);
+
+      setText(newText);
+
+      // Set cursor position after the inserted emoji
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+        textarea.focus();
+      }, 0);
+    },
+    [text, setText]
+  );
 
   const onEmojiSelect = useCallback(
     (emoji) => {
       console.log("Emoji selected:", emoji.native);
-      setText((prevText) => prevText + emoji.native);
+      insertEmoji(emoji.native);
       setShowEmojiPicker(false);
     },
-    [setText]
+    [insertEmoji]
   );
 
   const toggleEmojiPicker = useCallback(() => {
@@ -37,8 +60,8 @@ const CustomMessageInput = () => {
           const response = await channel.sendImage(file);
           if (response.file) {
             const attachmentUrl = response.file;
-            const messageResponse = await channel.sendMessage({
-              text: text,
+            const messageResponse = await sendMessage({
+              text: text || "",
               attachments: [
                 {
                   type: "image",
@@ -48,30 +71,32 @@ const CustomMessageInput = () => {
               ],
             });
             console.log("Message sent with attachment:", messageResponse);
-            setText("");
+            setText(''); // Clear the text after sending
           }
         } catch (error) {
           console.error("Error uploading file:", error);
         }
       }
     },
-    [channel, text, setText]
+    [channel, text, sendMessage, setText]
   );
 
   const handleSendMessage = useCallback(
     async (event) => {
       event.preventDefault();
-      if (text.trim()) {
+      const trimmedText = (text || "").trim();
+      if (trimmedText) {
         try {
-          const messageResponse = await channel.sendMessage({ text });
-          console.log("Message sent:", messageResponse);
-          setText("");
+  
+          const messageResponse = await sendMessage({ text: trimmedText });
+
+          setText(''); // Clear the text after sending
         } catch (error) {
           console.error("Error sending message:", error);
         }
       }
     },
-    [channel, text, setText]
+    [text, sendMessage, setText]
   );
 
   useEffect(() => {
@@ -94,8 +119,9 @@ const CustomMessageInput = () => {
     <div className="dark-modern-chat-input">
       <div className="input-wrapper">
         <textarea
+          ref={textareaRef}
           className="message-textarea"
-          value={text}
+          value={text || ""}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type your message"
         />

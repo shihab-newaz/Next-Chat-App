@@ -1,28 +1,36 @@
 import React, { useState } from "react";
-import { ChannelList, useChatContext } from "stream-chat-react";
+import { ChannelList, useChatContext,Avatar } from "stream-chat-react";
 import { ChannelSearch, TeamChannelList, TeamChannelPreview } from "./";
 import Cookies from "universal-cookie";
-import Hospital_Icon from "@/assets/hospital.png";
 import LogoutIcon from "@/assets/logout.png";
 import Image from "next/image";
 import "@/app/styles/CustomChannelList.css";
 
 const cookies = new Cookies();
 
-const SideBar = ({ logout }) => (
-  <div className="channel-list__sidebar">
-    <div className="channel-list__sidebar__icon1">
-      <div className="icon1__inner">
-        <Image src={Hospital_Icon} alt="hospital" width={30} height={30} />
+const SideBar = ({ logout }) => {
+  const { client } = useChatContext();
+  const user = client.user;
+
+  return (
+    <div className="channel-list__sidebar">
+      <div className="channel-list__sidebar__icon1">
+        <div className="icon1__inner">
+          <Avatar
+            image={user?.image}
+            name={user?.fullName || user?.id}
+            size={50}
+          />
+        </div>
+      </div>
+      <div className="channel-list__sidebar__icon2">
+        <div className="icon1__inner" onClick={logout}>
+          <Image src={LogoutIcon} alt="logout" width={30} height={30} />
+        </div>
       </div>
     </div>
-    <div className="channel-list__sidebar__icon2">
-      <div className="icon1__inner" onClick={logout}>
-        <Image src={LogoutIcon} alt="logout" width={30} height={30} />
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 const CompanyHeader = () => (
   <div className="channel-list__header">

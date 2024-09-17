@@ -35,7 +35,7 @@ const Auth = ({ onAuth }) => {
     e.preventDefault();
     setError("");
     const { fullName, userName, password, phoneNumber, avatarURL } = form;
-    const URL = isSignUp ? "/api/auth/signup" : "/api/auth/login";
+    const URL = isSignUp ? "api/auth/signup" : "api/auth/login";
     try {
       const response = await axios.post(URL, {
         userName,
