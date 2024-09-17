@@ -10,13 +10,24 @@ const twilioClient = twilio(accountSID, authToken);
 // Stream Chat client initialization
 const api_key = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 const api_secret = process.env.STREAM_API_SECRET;
-const serverClient = StreamChat.getInstance(api_key, api_secret);
+
+let serverClient;
+
+if (api_key && api_secret) {
+  serverClient = StreamChat.getInstance(api_key, api_secret);
+} else {
+  console.warn('Stream API key or secret is missing. Chat functionality may be limited.');
+}
 
 export async function GET() {
   return NextResponse.json({ message: "Server is running" });
 }
 
 export async function POST(request) {
+  if (!serverClient) {
+    return NextResponse.json({ error: "StreamChat client is not initialized" }, { status: 500 });
+  }
+
   const { message, user: sender, type, members } = await request.json();
   
   if (!sender || !sender.id) {
