@@ -1,0 +1,40 @@
+/* Custom styles for ChannelListContainer */
+.str-chat__channel-list {
+    background-color: #4169E1 !important; /* Royal Blue */
+  }
+  
+  .str-chat__channel-list-messenger {
+    background-color: #4169E1 !important; /* Royal Blue */
+  }
+  
+  .str-chat__channel-preview-messenger {
+    background-color: #4169E1 !important; /* Royal Blue */
+  }
+  
+  .str-chat__channel-preview-messenger:hover {
+    background-color: #3a5cd1 !important; /* Slightly darker blue for hover effect */
+  }
+  
+  .str-chat__channel-preview-messenger--active {
+    background-color: #3a5cd1 !important; /* Slightly darker blue for active channel */
+  }
+  
+  /* Custom styles for sidebar */
+  .channel-list__sidebar {
+    background-color: #2f4fc7 !important; /* Darker shade of royal blue for sidebar */
+  }
+  
+  /* Custom styles for header */
+  .channel-list__header {
+    background-color: #4169E1 !important; /* Royal Blue */
+    color: white !important;
+  }
+  
+  /* Adjust text color for better visibility */
+  .str-chat__channel-preview-messenger-name {
+    color: white !important;
+  }
+  
+  .str-chat__channel-preview-messenger--last-message {
+    color: #e0e0e0 !important; /* Light gray for better readability */
+  }

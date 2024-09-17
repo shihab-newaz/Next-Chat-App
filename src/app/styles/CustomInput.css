@@ -1,0 +1,120 @@
+.dark-modern-chat-input {
+  position: relative;
+  background-color: #2c2f33;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.message-textarea {
+  flex-grow: 1;
+  border: none;
+  background-color: #36393f;
+  color: #dcddde;
+  resize: none;
+  min-height: 40px;
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 8px;
+}
+
+.message-textarea::placeholder {
+  color: #72767d;
+}
+
+.message-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #5865f2;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: #b9bbbe;
+  transition: color 0.3s ease;
+}
+
+.icon-button:hover {
+  color: #dcddde;
+}
+
+.send-button {
+  background-color: #5865f2;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  margin-left: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.send-button:hover {
+  background-color: #4752c4;
+}
+
+.emoji-picker-wrapper {
+  position: relative;
+}
+
+.emoji-picker-container {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  z-index: 1000;
+  margin-bottom: 10px;
+  transform: translateX(-50%);
+}
+
+/* Ensure the emoji picker doesn't overflow the chat window */
+.emoji-picker-react {
+  max-height: 300px;
+  overflow-y: auto;
+  max-width: 100vw;
+  width: 350px;
+}
+
+@media (max-width: 480px) {
+  .emoji-picker-container {
+    right: -50px; /* Adjust this value as needed for smaller screens */
+  }
+  
+  .emoji-picker-react {
+    width: 280px; /* Make the picker smaller on mobile devices */
+  }
+}
+
+/* Style adjustments for dark theme */
+.emoji-picker-react .emoji-group:before {
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
+
+.emoji-picker-react .emoji-search {
+  background-color: #2a2a2a;
+  border-color: #444444;
+  color: #ffffff;
+}
+
+.emoji-picker-react .emoji-group {
+  background-color: #1a1a1a;
+}
+
+.emoji-picker-react .emoji-picker-react-emoji-tooltip {
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
