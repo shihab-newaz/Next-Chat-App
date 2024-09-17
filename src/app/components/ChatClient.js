@@ -1,6 +1,5 @@
-// client\src\app\components\ChatClient.js
+//@/app/components/ChatClient.js
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { StreamChat } from "stream-chat";
 import { Chat } from "stream-chat-react";
@@ -16,18 +15,17 @@ const cookies = new Cookies();
 const ChatClient = () => {
   const [client, setClient] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
+  const [authError, setAuthError] = useState(null);
   const [createType, setCreateType] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    // console.log("ChatClient useEffect running");
     checkAuth();
   }, []);
 
   const checkAuth = () => {
     const authToken = cookies.get("token");
-    // console.log("Checking auth token:", authToken);
     if (authToken) {
       connectUser(authToken);
     } else {
@@ -37,40 +35,51 @@ const ChatClient = () => {
 
   const connectUser = (authToken) => {
     const client = StreamChat.getInstance(apiKey);
-    // console.log("Connecting user with token:", authToken);
+    const userData = {
+      id: cookies.get("userId"),
+      name: cookies.get("userName"),
+      fullName: cookies.get("fullName"),
+      image: cookies.get("avatarURL"),
+      hashedPassword: cookies.get("hashedPassword"),
+      phoneNumber: cookies.get("phoneNumber"),
+    };
+
     client
-      .connectUser(
-        {
-          id: cookies.get("userId"),
-          name: cookies.get("userName"),
-          fullName: cookies.get("fullName"),
-          image: cookies.get("avatarURL"),
-          hashedPassword: cookies.get("hashedPassword"),
-          phoneNumber: cookies.get("phoneNumber"),
-        },
-        authToken
-      )
+      .connectUser(userData, authToken)
       .then(() => {
-         console.log("User connected successfully");
+        console.log("User connected successfully");
         setClient(client);
         setIsAuth(true);
+        setAuthError(null);
+        localStorage.setItem('isAuth', 'true');
       })
       .catch((error) => {
         console.error("Error connecting user:", error);
         setIsAuth(false);
+        setAuthError("Failed to connect user. Please try logging in again.");
+        localStorage.removeItem('isAuth');
       });
   };
 
   const handleAuth = () => {
-    
-    // console.log("handleAuth called");
     checkAuth();
   };
 
-  // console.log("Render - isAuth:", isAuth);
+  const handleLogout = () => {
+    cookies.remove("token");
+    cookies.remove("userId");
+    cookies.remove("userName");
+    cookies.remove("fullName");
+    cookies.remove("avatarURL");
+    cookies.remove("hashedPassword");
+    cookies.remove("phoneNumber");
+    localStorage.removeItem('isAuth');
+    setIsAuth(false);
+    setClient(null);
+  };
 
   if (!isAuth) {
-    return <Auth onAuth={handleAuth} />;
+    return <Auth onAuth={handleAuth} authError={authError} />;
   }
 
   return (
@@ -81,6 +90,7 @@ const ChatClient = () => {
           setIsCreating={setIsCreating}
           setCreateType={setCreateType}
           setIsEditing={setIsEditing}
+          onLogout={handleLogout}
         />
         <ChannelContainer
           isCreating={isCreating}

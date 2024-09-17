@@ -21,21 +21,48 @@ const Auth = ({ onAuth }) => {
   const [form, setForm] = useState(initialState);
   const [isSignUp, setIsSignUp] = useState(true);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const switchMode = () => {
     setIsSignUp((prevIsSignUp) => !prevIsSignUp);
     setError("");
+    setForm(initialState);
   };
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    if (isSignUp) {
+      if (form.password !== form.confirmPassword) {
+        setError("Passwords do not match");
+        return false;
+      }
+      if (form.password.length < 6) {
+        setError("Password must be at least 6 characters long");
+        return false;
+      }
+      if (!/^\d{11}$/.test(form.phoneNumber)) {
+        setError("Please enter a valid 10-digit phone number");
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!validateForm()) {
+      return;
+    }
+
     const { fullName, userName, password, phoneNumber, avatarURL } = form;
-    const URL = isSignUp ? "api/auth/signup" : "api/auth/login";
+    const URL = isSignUp ? "/api/auth/signup" : "/api/auth/login";
+    setIsLoading(true);
+
     try {
       const response = await axios.post(URL, {
         userName,
@@ -60,7 +87,9 @@ const Auth = ({ onAuth }) => {
       onAuth();
     } catch (error) {
       console.error("Authentication error:", error.response ? error.response.data : error.message);
-      setError(error.response ? error.response.data.message : "An unexpected error occurred");
+      setError(error.response?.data?.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,7 +97,7 @@ const Auth = ({ onAuth }) => {
     <div className="auth__form-container">
       <div className="auth__form-container_fields">
         <div className="auth__form-container_fields-content">
-          <p>{isSignUp ? "Sign Up" : "Sign In"}</p>
+          <h2>{isSignUp ? "Sign Up" : "Sign In"}</h2>
           <form onSubmit={handleSubmit}>
             {isSignUp && (
               <div className="auth__form-container_fields-content_input">
@@ -78,6 +107,7 @@ const Auth = ({ onAuth }) => {
                   type="text"
                   placeholder="Full Name"
                   onChange={handleChange}
+                  value={form.fullName}
                   required
                 />
               </div>
@@ -89,6 +119,7 @@ const Auth = ({ onAuth }) => {
                 type="text"
                 placeholder="Username"
                 onChange={handleChange}
+                value={form.userName}
                 required
               />
             </div>
@@ -97,9 +128,10 @@ const Auth = ({ onAuth }) => {
                 <label htmlFor="phoneNumber">Phone Number</label>
                 <input
                   name="phoneNumber"
-                  type="text"
+                  type="tel"
                   placeholder="Phone Number"
                   onChange={handleChange}
+                  value={form.phoneNumber}
                   required
                 />
               </div>
@@ -109,9 +141,10 @@ const Auth = ({ onAuth }) => {
                 <label htmlFor="avatarURL">Avatar URL</label>
                 <input
                   name="avatarURL"
-                  type="text"
+                  type="url"
                   placeholder="Avatar URL"
                   onChange={handleChange}
+                  value={form.avatarURL}
                   required
                 />
               </div>
@@ -123,6 +156,7 @@ const Auth = ({ onAuth }) => {
                 type="password"
                 placeholder="Password"
                 onChange={handleChange}
+                value={form.password}
                 required
               />
             </div>
@@ -134,12 +168,15 @@ const Auth = ({ onAuth }) => {
                   type="password"
                   placeholder="Confirm Password"
                   onChange={handleChange}
+                  value={form.confirmPassword}
                   required
                 />
               </div>
             )}
             <div className="auth__form-container_fields-content_button">
-              <button>{isSignUp ? "Sign Up" : "Sign In"}</button>
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? "Processing..." : (isSignUp ? "Sign Up" : "Sign In")}
+              </button>
             </div>
           </form>
           {error && <p className="auth__form-container_fields-content_error">{error}</p>}
