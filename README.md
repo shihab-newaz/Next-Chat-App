@@ -49,7 +49,7 @@ Before you begin, ensure you have met the following requirements:
 
 3. Set up environment variables:
    Create a `.env.local` file in the root directory and add the following:
-   ```
+   ``
    NEXT_PUBLIC_STREAM_API_KEY=your_stream_api_key
    NEXT_PUBLIC_STREAM_API_SECRET=your_stream_api_secret
    NEXT_PUBLIC_STREAM_APP_ID=your_stream_app_id
