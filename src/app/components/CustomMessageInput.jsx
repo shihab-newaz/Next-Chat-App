@@ -2,7 +2,8 @@ import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   useMessageInputContext,
   useChannelStateContext,
-  useChannelActionContext
+  useChannelActionContext,
+  useChatContext,
 } from "stream-chat-react";
 import "@/app/styles/CustomInput.css";
 import data from "@emoji-mart/data";
@@ -14,6 +15,7 @@ const CustomMessageInput = () => {
   const { setText, text } = useMessageInputContext();
   const { channel } = useChannelStateContext();
   const { sendMessage } = useChannelActionContext();
+  const { client } = useChatContext();
 
   const emojiPickerRef = useRef(null);
   const textareaRef = useRef(null);
@@ -29,7 +31,6 @@ const CustomMessageInput = () => {
 
       setText(newText);
 
-      // Set cursor position after the inserted emoji
       setTimeout(() => {
         textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
         textarea.focus();
@@ -40,7 +41,6 @@ const CustomMessageInput = () => {
 
   const onEmojiSelect = useCallback(
     (emoji) => {
-      console.log("Emoji selected:", emoji.native);
       insertEmoji(emoji.native);
       setShowEmojiPicker(false);
     },
@@ -48,9 +48,75 @@ const CustomMessageInput = () => {
   );
 
   const toggleEmojiPicker = useCallback(() => {
-    console.log("Emoji picker toggled");
     setShowEmojiPicker((prev) => !prev);
   }, []);
+
+  const sendSMSNotifications = async (channelId, messageContent, senderId) => {
+    try {
+      const members = Object.values(channel.state.members);
+      const sender = client.user;
+      const channelName = channel.data.name || "Unknown Channel";
+      const isDirectMessage = channel.type === "messaging";
+
+      for (const member of members) {
+        if (member.user.id !== senderId) {
+          let recipientName = member.user.name || member.user.id;
+
+          const response = await fetch("/api/send-sms", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sender: sender.name || sender.id,
+              senderID: senderId,
+              channel: channelId,
+              channelName: channelName,
+              message: messageContent,
+              recipient: member.user.id,
+              recipientName: recipientName,
+              isDirectMessage: isDirectMessage,
+            }),
+          });
+          
+          const result = await response.json();
+          if (result.success) {
+            console.log(`SMS notification sent to ${member.user.id}`);
+          } else if (result.error === "SMS limit reached. Try again later.") {
+            console.log(
+              `SMS limit reached for ${member.user.id}. Try again later.`
+            );
+          } else {
+            console.error(
+              `Failed to send SMS notification to ${member.user.id}:`,
+              result.error
+            );
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error sending notifications:", error);
+    }
+  };
+
+  const handleSendMessage = useCallback(
+    async (event) => {
+      event.preventDefault();
+      const trimmedText = (text || "").trim();
+      if (trimmedText) {
+        try {
+          await sendMessage({ text: trimmedText });
+          setText("");
+          console.log(
+            "Message sent successfully, sending SMS notifications..."
+          );
+          await sendSMSNotifications(channel.id, trimmedText, client.user.id);
+          console.log("SMS notifications sent successfully");
+        } catch (error) {
+          console.error("Error sending message:", error);
+        }
+      }
+    },
+    [text, sendMessage, setText, channel, client.user.id]
+  );
 
   const handleFileUpload = useCallback(
     async (event) => {
@@ -71,32 +137,22 @@ const CustomMessageInput = () => {
               ],
             });
             console.log("Message sent with attachment:", messageResponse);
-            setText(''); // Clear the text after sending
+            setText("");
+
+            if (messageResponse) {
+              await sendSMSNotifications(
+                channel.id,
+                `[Image Attachment] ${text || ""}`,
+                client.user.id
+              );
+            }
           }
         } catch (error) {
           console.error("Error uploading file:", error);
         }
       }
     },
-    [channel, text, sendMessage, setText]
-  );
-
-  const handleSendMessage = useCallback(
-    async (event) => {
-      event.preventDefault();
-      const trimmedText = (text || "").trim();
-      if (trimmedText) {
-        try {
-  
-          const messageResponse = await sendMessage({ text: trimmedText });
-
-          setText(''); // Clear the text after sending
-        } catch (error) {
-          console.error("Error sending message:", error);
-        }
-      }
-    },
-    [text, sendMessage, setText]
+    [channel, text, sendMessage, setText, client.user.id]
   );
 
   useEffect(() => {

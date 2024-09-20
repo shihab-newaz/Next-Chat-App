@@ -1,4 +1,3 @@
-//@/app/components/ChatClient.js
 "use client";
 import React, { useState, useEffect } from "react";
 import { StreamChat } from "stream-chat";
@@ -23,6 +22,10 @@ const ChatClient = () => {
   useEffect(() => {
     checkAuth();
   }, []);
+
+
+
+
 
   const checkAuth = () => {
     const authToken = cookies.get("token");

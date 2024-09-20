@@ -33,6 +33,17 @@ const Auth = ({ onAuth }) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const formatBangladeshiPhoneNumber = (phoneNumber) => {
+    // Remove any non-digit characters
+    const digitsOnly = phoneNumber.replace(/\D/g, '');
+    // Check if it's a valid Bangladeshi number (should be 11 digits starting with '01')
+    if (digitsOnly.length === 11 && digitsOnly.startsWith('01')) {
+      return '+880' + digitsOnly.slice(1);
+    }
+    
+    return phoneNumber;
+  };
+
   const validateForm = () => {
     if (isSignUp) {
       if (form.password !== form.confirmPassword) {
@@ -43,8 +54,8 @@ const Auth = ({ onAuth }) => {
         setError("Password must be at least 6 characters long");
         return false;
       }
-      if (!/^\d{11}$/.test(form.phoneNumber)) {
-        setError("Please enter a valid 10-digit phone number");
+      if (!/^01\d{9}$/.test(form.phoneNumber)) {
+        setError("Please enter a valid Bangladeshi phone number (e.g., 01712345678)");
         return false;
       }
     }
@@ -64,11 +75,12 @@ const Auth = ({ onAuth }) => {
     setIsLoading(true);
 
     try {
+      const formattedPhoneNumber = formatBangladeshiPhoneNumber(phoneNumber);
       const response = await axios.post(URL, {
         userName,
         password,
         fullName: form.fullName,
-        phoneNumber,
+        phoneNumber: formattedPhoneNumber,
         avatarURL,
       });
 
@@ -81,7 +93,7 @@ const Auth = ({ onAuth }) => {
 
       if (isSignUp) {
         cookies.set("hashedPassword", hashedPassword);
-        cookies.set("phoneNumber", phoneNumber);
+        cookies.set("phoneNumber", formattedPhoneNumber);
         cookies.set("avatarURL", avatarURL);
       }
       onAuth();
@@ -129,7 +141,7 @@ const Auth = ({ onAuth }) => {
                 <input
                   name="phoneNumber"
                   type="tel"
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (e.g., 01712345678)"
                   onChange={handleChange}
                   value={form.phoneNumber}
                   required
